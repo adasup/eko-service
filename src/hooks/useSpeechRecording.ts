@@ -12,8 +12,19 @@ export interface UseSpeechRecordingReturn {
   speechSupported: boolean
 }
 
+interface SR {
+  lang: string
+  continuous: boolean
+  interimResults: boolean
+  onresult: ((e: { resultIndex: number; results: { isFinal: boolean; 0: { transcript: string } }[] }) => void) | null
+  onerror: ((e: { error: string }) => void) | null
+  onend: (() => void) | null
+  start(): void
+  stop(): void
+}
+type SRCtor = new () => SR
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const SpeechRecognitionAPI: typeof SpeechRecognition | undefined =
+const SpeechRecognitionAPI: SRCtor | undefined =
   typeof window !== 'undefined'
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ? ((window as any).SpeechRecognition ?? (window as any).webkitSpeechRecognition)
@@ -26,7 +37,7 @@ export function useSpeechRecording(): UseSpeechRecordingReturn {
 
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
-  const recognitionRef = useRef<SpeechRecognition | null>(null)
+  const recognitionRef = useRef<SR | null>(null)
   const isRecordingRef = useRef(false)   // stable ref for recognition callbacks
   const finalRef = useRef('')            // accumulates confirmed final transcript
 
