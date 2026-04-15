@@ -109,9 +109,14 @@ export function useSpeechRecording(): UseSpeechRecordingReturn {
   const stopRecording = useCallback(() => {
     isRecordingRef.current = false
     setIsRecording(false)
-    if (recognitionRef.current) {
-      try { recognitionRef.current.stop() } catch { /* ignore */ }
-      recognitionRef.current = null
+    const rec = recognitionRef.current
+    recognitionRef.current = null
+    if (rec) {
+      // Null out handlers BEFORE stopping so onend can't trigger a restart
+      rec.onend = null
+      rec.onerror = null
+      rec.onresult = null
+      try { rec.stop() } catch { /* ignore */ }
     }
   }, [])
 
