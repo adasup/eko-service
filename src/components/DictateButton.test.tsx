@@ -29,24 +29,17 @@ describe('DictateButton', () => {
     expect(screen.getByRole('button')).toBeDisabled()
   })
 
-  it('calls onStart on pointerDown', () => {
+  it('calls onStart on click when not recording', () => {
     const onStart = vi.fn()
     render(<DictateButton isRecording={false} onStart={onStart} onStop={vi.fn()} />)
-    fireEvent.pointerDown(screen.getByRole('button'))
+    fireEvent.click(screen.getByRole('button'))
     expect(onStart).toHaveBeenCalledOnce()
   })
 
-  it('calls onStop on pointerUp', () => {
+  it('calls onStop on click when recording', () => {
     const onStop = vi.fn()
     render(<DictateButton isRecording={true} onStart={vi.fn()} onStop={onStop} />)
-    fireEvent.pointerUp(screen.getByRole('button'))
-    expect(onStop).toHaveBeenCalledOnce()
-  })
-
-  it('calls onStop on pointerLeave', () => {
-    const onStop = vi.fn()
-    render(<DictateButton isRecording={true} onStart={vi.fn()} onStop={onStop} />)
-    fireEvent.pointerLeave(screen.getByRole('button'))
+    fireEvent.click(screen.getByRole('button'))
     expect(onStop).toHaveBeenCalledOnce()
   })
 

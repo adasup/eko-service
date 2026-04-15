@@ -6,8 +6,14 @@ interface DictateButtonProps {
 }
 
 export default function DictateButton({ isRecording, onStart, onStop, disabled }: DictateButtonProps) {
+  function handleClick() {
+    if (disabled) return
+    if (isRecording) onStop()
+    else onStart()
+  }
+
   return (
-    <div className="relative flex items-center justify-center" style={{ touchAction: 'none' }}>
+    <div className="relative flex items-center justify-center">
       {/* Pulse ring — only when recording */}
       {isRecording && (
         <span className="absolute inline-flex h-24 w-24 rounded-full bg-brand-200 animate-ping opacity-40" />
@@ -15,12 +21,7 @@ export default function DictateButton({ isRecording, onStart, onStop, disabled }
 
       <button
         disabled={disabled}
-        onPointerDown={(e) => {
-          e.currentTarget.setPointerCapture(e.pointerId)
-          onStart()
-        }}
-        onPointerUp={onStop}
-        onPointerLeave={onStop}
+        onClick={handleClick}
         className={`relative z-10 w-20 h-20 rounded-full flex items-center justify-center transition-all duration-150 select-none
           ${
             isRecording
@@ -29,7 +30,6 @@ export default function DictateButton({ isRecording, onStart, onStop, disabled }
           }
           ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
         `}
-        style={{ touchAction: 'none' }}
       >
         {/* Mic icon */}
         <svg

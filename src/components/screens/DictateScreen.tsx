@@ -178,7 +178,9 @@ export default function DictateScreen({ settings, priceLists, onDone, onBack }: 
                 disabled={claude.isLoading}
               />
               <p className="text-xs text-gray-400 text-center px-8">
-                Klepnutím aktivujete mikrofon, pak diktujte do klávesnice
+                {speech.speechSupported
+                  ? 'Klepnutím spustíte nahrávání, klepnutím znovu zastavíte'
+                  : 'Klepnutím aktivujete klávesnici — použijte mikrofon na klávesnici'}
               </p>
             </div>
 

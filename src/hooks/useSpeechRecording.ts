@@ -9,45 +9,103 @@ export interface UseSpeechRecordingReturn {
   stopRecording: () => void
   clearText: () => void
   textareaRef: React.RefObject<HTMLTextAreaElement>
+  speechSupported: boolean
 }
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const SpeechRecognitionAPI: typeof SpeechRecognition | undefined =
+  typeof window !== 'undefined'
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ? ((window as any).SpeechRecognition ?? (window as any).webkitSpeechRecognition)
+    : undefined
 
 export function useSpeechRecording(): UseSpeechRecordingReturn {
   const [isRecording, setIsRecording] = useState(false)
   const [elapsedSeconds, setElapsedSeconds] = useState(0)
   const [currentText, setCurrentText] = useState('')
+
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const recognitionRef = useRef<SpeechRecognition | null>(null)
+  const isRecordingRef = useRef(false)   // stable ref for recognition callbacks
+  const finalRef = useRef('')            // accumulates confirmed final transcript
 
+  // Keep ref in sync with state
+  useEffect(() => { isRecordingRef.current = isRecording }, [isRecording])
+
+  // Timer
   useEffect(() => {
     if (isRecording) {
       setElapsedSeconds(0)
-      intervalRef.current = setInterval(() => {
-        setElapsedSeconds((s) => s + 1)
-      }, 1000)
+      intervalRef.current = setInterval(() => setElapsedSeconds((s) => s + 1), 1000)
     } else {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current)
-        intervalRef.current = null
-      }
+      if (intervalRef.current) { clearInterval(intervalRef.current); intervalRef.current = null }
     }
-    return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current)
-    }
+    return () => { if (intervalRef.current) clearInterval(intervalRef.current) }
   }, [isRecording])
 
-  const startRecording = useCallback(() => {
-    setIsRecording(true)
-    // Focus textarea so the user can dictate via native keyboard
-    requestAnimationFrame(() => {
-      textareaRef.current?.focus()
-    })
+  const createAndStart = useCallback(() => {
+    if (!SpeechRecognitionAPI) return
+
+    const rec = new SpeechRecognitionAPI()
+    rec.lang = 'cs-CZ'
+    rec.continuous = true
+    rec.interimResults = true
+    recognitionRef.current = rec
+
+    rec.onresult = (event) => {
+      let interim = ''
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        if (event.results[i].isFinal) {
+          finalRef.current += event.results[i][0].transcript + ' '
+        } else {
+          interim += event.results[i][0].transcript
+        }
+      }
+      setCurrentText(finalRef.current + interim)
+    }
+
+    rec.onerror = (e) => {
+      // 'no-speech' is normal on iOS — just restart
+      if (e.error === 'no-speech' && isRecordingRef.current) return
+      isRecordingRef.current = false
+      setIsRecording(false)
+    }
+
+    rec.onend = () => {
+      // iOS stops recognition after ~15 s of continuous mode — restart if still recording
+      if (isRecordingRef.current) {
+        try { createAndStart() } catch { /* ignore */ }
+      }
+    }
+
+    try { rec.start() } catch { /* already started */ }
   }, [])
 
+  const startRecording = useCallback(() => {
+    finalRef.current = currentText ? currentText.trimEnd() + ' ' : ''
+    isRecordingRef.current = true
+    setIsRecording(true)
+
+    if (SpeechRecognitionAPI) {
+      createAndStart()
+    } else {
+      // Fallback: focus textarea so user can dictate via native keyboard mic
+      requestAnimationFrame(() => textareaRef.current?.focus())
+    }
+  }, [createAndStart, currentText])
+
   const stopRecording = useCallback(() => {
+    isRecordingRef.current = false
     setIsRecording(false)
+    if (recognitionRef.current) {
+      try { recognitionRef.current.stop() } catch { /* ignore */ }
+      recognitionRef.current = null
+    }
   }, [])
 
   const clearText = useCallback(() => {
+    finalRef.current = ''
     setCurrentText('')
     setElapsedSeconds(0)
   }, [])
@@ -61,5 +119,6 @@ export function useSpeechRecording(): UseSpeechRecordingReturn {
     stopRecording,
     clearText,
     textareaRef,
+    speechSupported: !!SpeechRecognitionAPI,
   }
 }
