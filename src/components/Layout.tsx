@@ -14,9 +14,9 @@ export default function Layout({ screen, onNavigate, children }: LayoutProps) {
   const showNav = SCREENS_WITH_NAV.includes(screen)
 
   return (
-    <div className="min-h-dvh flex flex-col items-center bg-gray-50">
-      <div className="w-full max-w-app min-h-dvh bg-white relative flex flex-col">
-        <main className={`flex-1 overflow-y-auto ${showNav ? 'pb-20' : ''}`}>
+    <div className="h-dvh flex flex-col items-center bg-gray-50">
+      <div className="w-full max-w-app h-dvh bg-white flex flex-col">
+        <main className="flex-1 overflow-y-auto">
           {children}
         </main>
         {showNav && <BottomNav activeScreen={screen} onNavigate={onNavigate} />}

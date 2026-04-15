@@ -38,7 +38,7 @@ export default function BottomNav({ activeScreen, onNavigate }: BottomNavProps) 
   ]
 
   return (
-    <nav className="absolute bottom-0 left-0 right-0 h-16 border-t border-gray-100 bg-white flex items-center justify-around safe-bottom">
+    <nav className="shrink-0 h-16 border-t border-gray-100 bg-white flex items-center justify-around safe-bottom">
       {tabs.map(({ id, label, icon }) => (
         <button
           key={id}
