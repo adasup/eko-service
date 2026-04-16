@@ -22,6 +22,7 @@ const STEPS = ['Ceník', 'Diktování', 'Kontrola']
 export default function DictateScreen({ settings, priceLists, onDone, onBack }: DictateScreenProps) {
   const [budgetName, setBudgetName] = useState('')
   const [selectedPriceListId, setSelectedPriceListId] = useState(priceLists[0]?.id ?? 'default')
+  const [vatRate, setVatRate] = useState(settings.vatRate)
   const [step, setStep] = useState<Step>(1)
   const [allItems, setAllItems] = useState<BudgetItem[]>([])
   const [transcripts, setTranscripts] = useState<Transcript[]>([])
@@ -57,6 +58,16 @@ export default function DictateScreen({ settings, priceLists, onDone, onBack }: 
     setStep(3)
   }
 
+  function handleEditItem(id: string, patch: Partial<BudgetItem>) {
+    setAllItems((prev) => prev.map((i) => i.id === id ? { ...i, ...patch } : i))
+  }
+  function handleDeleteItem(id: string) {
+    setAllItems((prev) => prev.filter((i) => i.id !== id))
+  }
+  function handleAddItem(item: BudgetItem) {
+    setAllItems((prev) => [...prev, item])
+  }
+
   function handleUndoLastBatch() {
     setAllItems((prev) => prev.slice(0, prev.length - lastBatchSize))
     setTranscripts((prev) => prev.slice(0, -1))
@@ -80,7 +91,7 @@ export default function DictateScreen({ settings, priceLists, onDone, onBack }: 
         transcripts,
         priceListIds: [selectedPriceListId],
         totalWithoutVat: total,
-        vatRate: settings.vatRate,
+        vatRate,
       }
       await onDone(budget)
     } finally {
@@ -149,6 +160,20 @@ export default function DictateScreen({ settings, priceLists, onDone, onBack }: 
                 </option>
               ))}
             </select>
+          </div>
+
+          <div>
+            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+              Sazba DPH (%)
+            </label>
+            <input
+              type="number"
+              value={vatRate}
+              onChange={(e) => setVatRate(Number(e.target.value))}
+              min={0}
+              max={100}
+              className="mt-1 w-full border border-gray-200 rounded-card px-3 py-2.5 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-brand-300"
+            />
           </div>
 
           {step === 1 && (
@@ -225,7 +250,13 @@ export default function DictateScreen({ settings, priceLists, onDone, onBack }: 
             <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">
               Rozpoznané položky ({allItems.length})
             </p>
-            <LiveItemList items={allItems} runningTotal={runningTotal} />
+            <LiveItemList
+              items={allItems}
+              runningTotal={runningTotal}
+              onEdit={handleEditItem}
+              onDelete={handleDeleteItem}
+              onAdd={handleAddItem}
+            />
             <div className="flex gap-2 mt-3">
               <button
                 onClick={() => setStep(2)}

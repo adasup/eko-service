@@ -56,6 +56,42 @@ export default function ResultScreen({
     await onBudgetUpdate(updated)
   }
 
+  async function handleEditItem(id: string, patch: Partial<Budget['items'][number]>) {
+    const items = localBudget.items.map((i) => i.id === id ? { ...i, ...patch } : i)
+    const updated: Budget = {
+      ...localBudget,
+      items,
+      totalWithoutVat: items.reduce((s, i) => s + i.totalPrice, 0),
+      updatedAt: new Date().toISOString(),
+    }
+    setLocalBudget(updated)
+    await onBudgetUpdate(updated)
+  }
+
+  async function handleDeleteItem(id: string) {
+    const items = localBudget.items.filter((i) => i.id !== id)
+    const updated: Budget = {
+      ...localBudget,
+      items,
+      totalWithoutVat: items.reduce((s, i) => s + i.totalPrice, 0),
+      updatedAt: new Date().toISOString(),
+    }
+    setLocalBudget(updated)
+    await onBudgetUpdate(updated)
+  }
+
+  async function handleAddItem(item: Budget['items'][number]) {
+    const items = [...localBudget.items, item]
+    const updated: Budget = {
+      ...localBudget,
+      items,
+      totalWithoutVat: items.reduce((s, i) => s + i.totalPrice, 0),
+      updatedAt: new Date().toISOString(),
+    }
+    setLocalBudget(updated)
+    await onBudgetUpdate(updated)
+  }
+
   async function toggleStatus() {
     const updated: Budget = {
       ...localBudget,
@@ -143,7 +179,12 @@ export default function ResultScreen({
         <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide px-4 mb-2">
           Položky
         </p>
-        <ResultItemList items={localBudget.items} />
+        <ResultItemList
+          items={localBudget.items}
+          onEdit={handleEditItem}
+          onDelete={handleDeleteItem}
+          onAdd={handleAddItem}
+        />
       </div>
     </div>
   )
