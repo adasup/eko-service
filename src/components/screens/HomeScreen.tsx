@@ -62,15 +62,6 @@ export default function HomeScreen({ budgets, onOpen, onNew }: HomeScreenProps) 
               >
                 <div className="flex items-start justify-between gap-2">
                   <p className="text-sm font-semibold text-gray-900 flex-1 leading-tight">{budget.name}</p>
-                  <span
-                    className={`flex-shrink-0 text-[11px] font-medium px-2 py-0.5 rounded-full ${
-                      budget.status === 'done'
-                        ? 'bg-brand-50 text-brand-400'
-                        : 'bg-gray-100 text-gray-500'
-                    }`}
-                  >
-                    {budget.status === 'done' ? 'Hotovo' : 'Koncept'}
-                  </span>
                 </div>
                 <div className="flex items-center gap-3 mt-2">
                   <span className="text-xs text-gray-400">{formatDate(budget.updatedAt)}</span>

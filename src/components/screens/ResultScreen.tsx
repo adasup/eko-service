@@ -92,16 +92,6 @@ export default function ResultScreen({
     await onBudgetUpdate(updated)
   }
 
-  async function toggleStatus() {
-    const updated: Budget = {
-      ...localBudget,
-      status: localBudget.status === 'done' ? 'draft' : 'done',
-      updatedAt: new Date().toISOString(),
-    }
-    setLocalBudget(updated)
-    await onBudgetUpdate(updated)
-  }
-
   return (
     <div className="pb-8">
       {/* Header */}
@@ -115,16 +105,6 @@ export default function ResultScreen({
           <h1 className="text-base font-bold text-gray-900 truncate">{localBudget.name}</h1>
           <p className="text-xs text-gray-400">{localBudget.items.length} položek</p>
         </div>
-        <button
-          onClick={toggleStatus}
-          className={`flex-shrink-0 text-[11px] font-medium px-2.5 py-1 rounded-full border transition-colors ${
-            localBudget.status === 'done'
-              ? 'bg-brand-50 text-brand-400 border-brand-100 hover:bg-brand-100'
-              : 'bg-gray-50 text-gray-500 border-gray-200 hover:bg-gray-100'
-          }`}
-        >
-          {localBudget.status === 'done' ? 'Hotovo' : 'Koncept'}
-        </button>
       </div>
 
       {/* Total bar */}

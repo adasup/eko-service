@@ -63,16 +63,6 @@ describe('HomeScreen — with budgets', () => {
     expect(screen.getByText('5 000 Kč')).toBeInTheDocument()
   })
 
-  it('shows "Koncept" badge for draft budgets', () => {
-    render(<HomeScreen budgets={[makeBudget({ status: 'draft' })]} onOpen={vi.fn()} onNew={vi.fn()} />)
-    expect(screen.getByText('Koncept')).toBeInTheDocument()
-  })
-
-  it('shows "Hotovo" badge for done budgets', () => {
-    render(<HomeScreen budgets={[makeBudget({ status: 'done' })]} onOpen={vi.fn()} onNew={vi.fn()} />)
-    expect(screen.getByText('Hotovo')).toBeInTheDocument()
-  })
-
   it('calls onOpen with budget id when card is clicked', async () => {
     const onOpen = vi.fn()
     render(<HomeScreen budgets={[makeBudget()]} onOpen={onOpen} onNew={vi.fn()} />)
